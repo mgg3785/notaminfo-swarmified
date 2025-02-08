@@ -32,29 +32,27 @@ def notam_parser(notam : str):
     
     sections = ['', 'Q', 'A', 'B', 'C', 'D', 'E', 'F', 'G', 'CREATED:', 'SOURCE:']
     parsed_notam = dict()
-    notam = notam.replace('\n',' ')
-    pattern = r'{}(.+?)(?:{}\)(.+?))?(?:{}\)(.+?))?(?:{}\)(.+?))?(?:{}\)(.+?))?(?:{}\)(.+?))?(?:{}\)(.+?))?(?:{}\)(.+?))?(?:{}\)(.+?))?{}(.+){}(.+)'
-    match = re.search(pattern.format(*sections), notam)
+    pattern = r'(.+?)(?:Q\)(.+?))?(?:A\)(.+?))?(?:B\)(.+?))?(?:C\)(.+?))?(?:D\)(.+?))?(?:E\)(.+?))?(?:F\)(.+?))?(?:G\)(.+?))?CREATED:(.+)SOURCE:(.+)'
+    match = re.search(pattern, notam, re.DOTALL)
     if not match:
         raise ValueError(f'Parsing failed.')
     for sec in sections:
         grouped = match.group(sections.index(sec) + 1)
         parsed_notam[sec] = grouped.strip() if grouped else grouped
 
-    coordinates = re.findall(r'(\d[\d\.]{5,10}[NS]).*?(\d[\d\.]{5,10}[EW])', notam)
+    coordinates = re.findall(r'(\d[\d\.]{5,10}[NS]).*?(\d[\d\.]{5,10}[EW])', notam, re.DOTALL)
     coordinates = [(dms_to_dd(lat),dms_to_dd(long)) for lat,long in coordinates]
     parsed_notam['coordinates'] = coordinates
             
     return parsed_notam
 
 def pars_part(notam : str) -> str:
-    notam = notam.replace('\n',' ')
     if not validate_notam(notam):
         raise ValueError(f'Notam Invalid!')
-    match = re.search(r'(.+?)[QABCDE]\)(?:.*?A\)(.+?)[QABCDEF]\))?',notam)
+    match = re.search(r'(.+?)[QABCDE]\)(?:.*?A\)(.+?)[QABCDEF]\))?',notam, re.DOTALL)
     if match:
-        identifier = match.group(1)
-        a_sec = str(match.group(2))
+        identifier = match.group(1).strip()
+        a_sec = str(match.group(2)).strip()
         return identifier + ' ' + a_sec
 
 
