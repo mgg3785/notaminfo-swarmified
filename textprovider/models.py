@@ -24,3 +24,6 @@ class Coordinates(models.Model):
     latitude = models.DecimalField(max_digits=10, decimal_places=7)
     longitude = models.DecimalField(max_digits=10, decimal_places=7)
 
+    class Meta:
+        unique_together = ('latitude','longitude')
+

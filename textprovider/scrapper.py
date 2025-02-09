@@ -1,7 +1,7 @@
 import re
 from requests import get
 from bs4 import BeautifulSoup
-from time import strftime, strptime
+from datetime import datetime
 from decimal import Decimal
 
 
@@ -83,8 +83,7 @@ def scrap_notams(notam_link: str):
     return notams_text
 
 def convert_time_standard(time : str):
-    time_format = "%d %b %Y %H:%M:%S"
-    standard_time_format = "%Y-%m-%d %H:%M:%S"
-    time_obj = strptime(time.strip(),time_format)
+    time_format = r"%d %b %Y %H:%M:%S"
+    time_obj = datetime.strptime(time.strip(),time_format)
     return time_obj
 

@@ -4,3 +4,4 @@ test2.py
 dump.rdb
 __pycache__/
 .env
+migrations/
