@@ -4,6 +4,9 @@ class Notams(models.Model):
     notam_text = models.TextField(max_length=1500)
     part = models.CharField(max_length=255, unique=True, null=True)
 
+    def __str__(self):
+        return self.part
+
 class ParsedNotams(models.Model):
     notam = models.OneToOneField(Notams, on_delete=models.CASCADE, related_name='parsed_notams')
 
@@ -18,6 +21,9 @@ class ParsedNotams(models.Model):
 
     created = models.DateTimeField()
     source = models.CharField(max_length=255)
+
+    def __str__(self):
+        return 'parsed ' + self.notam.part
 
 class Coordinates(models.Model):
     notam = models.ForeignKey(Notams, on_delete=models.CASCADE, related_name='coordinates')

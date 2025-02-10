@@ -3,10 +3,12 @@ from .models import Notams, ParsedNotams
 from . import serializers
 from .pagination import NotamsPagination
 from rest_framework.response import Response
+from rest_framework_api_key.permissions import HasAPIKey
 
 
 class NotamsViewSet(viewsets.ReadOnlyModelViewSet):
     pagination_class = NotamsPagination
+    permission_classes = [HasAPIKey]
     requested_parsed = 'false'
     queryparams  = {'parsed':('true','false',None),'coordinates':('true','false',None)} # param : (valid values)
 
@@ -80,14 +82,5 @@ class NotamsViewSet(viewsets.ReadOnlyModelViewSet):
 
         
 
-
-class ParsedNotamsViewset(viewsets.ReadOnlyModelViewSet):
-    serializer_class = serializers.ParsedNotamsSerializer
-    def get_queryset(self):
-        print(self.kwargs)
-        notam_pk = self.kwargs.get('notam_pk')
-        if notam_pk:
-            return ParsedNotams.objects.filter(notam_id=notam_pk)
-        return ParsedNotams.objects.all()
         
 
