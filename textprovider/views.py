@@ -4,24 +4,28 @@ from . import serializers
 from .pagination import NotamsPagination
 from rest_framework.response import Response
 from rest_framework_api_key.permissions import HasAPIKey
+from django.shortcuts import get_object_or_404
 
 
 class NotamsViewSet(viewsets.ReadOnlyModelViewSet):
     pagination_class = NotamsPagination
     permission_classes = [HasAPIKey]
     requested_parsed = 'false'
-    queryparams  = {'parsed':('true','false',None),'coordinates':('true','false',None)} # param : (valid values)
+    
+    # param : (valid values)
+    queryparams  = {
+        'parsed':('true','false'),
+        'coordinates':('true','false')
+                    } 
+                    
+    def _get_requested_queryparams(self, queryparams: list | tuple = None):
+        if queryparams is None:
+            queryparams = self.queryparams.keys()
 
-
-    def _get_requested_queryparams(self,queryparams : list | tuple = queryparams.keys()):
         requested_queryparams = dict()
         for queryparam in queryparams:
-            queryparam_value = self.request.query_params.get(queryparam)
-            if isinstance(queryparam_value, str):
-                queryparam_value = queryparam_value.lower()
-                requested_queryparams[queryparam] = queryparam_value
-            else :
-                requested_queryparams[queryparam] = 'false'
+            queryparam_value = self.request.query_params.get(queryparam,'').lower()
+            requested_queryparams[queryparam] = queryparam_value if queryparam_value else 'false'
         return requested_queryparams
 
     def _validate_queryparams(self, requested_queryparams : dict):
@@ -39,6 +43,15 @@ class NotamsViewSet(viewsets.ReadOnlyModelViewSet):
         validation_error = self._validate_queryparams(queryparams_values)
         if validation_error:
             return validation_error
+    
+        if queryparams_values.get('parsed') == 'true':
+            notam_pk = self.kwargs.get('pk')
+            print(notam_pk)
+            queryset = self.get_queryset()         
+            instance = get_object_or_404(queryset,notam=notam_pk)
+            serializer = self.get_serializer(instance)
+            return Response(serializer.data)
+   
         return super().retrieve(request, *args, **kwargs)
     
     def list(self, request, *args, **kwargs):
@@ -52,7 +65,7 @@ class NotamsViewSet(viewsets.ReadOnlyModelViewSet):
         queryparams_values = self._get_requested_queryparams()
         requested_parsed = queryparams_values['parsed']
         requested_coordinates =  queryparams_values['coordinates']
-        notams_queryset = Notams.objects.all()
+        notams_queryset = Notams.objects.all().order_by('id')
         match (requested_parsed,requested_coordinates):
             case 'true','false':
                 notams_queryset = ParsedNotams.objects.all().order_by('notam')
@@ -62,7 +75,6 @@ class NotamsViewSet(viewsets.ReadOnlyModelViewSet):
                 notams_queryset = Notams.objects.prefetch_related('coordinates')
 
         return notams_queryset
-
     
     def get_serializer_class(self):
         queryparams_values = self._get_requested_queryparams()
