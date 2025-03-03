@@ -1,5 +1,5 @@
 from celery import shared_task
-from .scrapper import scrap_notams, notam_parser, pars_part, convert_time_standard
+from .notamtoolkit import scrap_notams, notam_parser, pars_part, convert_time_standard
 from django.conf import settings
 from django.db import transaction
 from textprovider.models import Notams, ParsedNotams, Coordinates
