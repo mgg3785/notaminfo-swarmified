@@ -46,7 +46,6 @@ class NotamsViewSet(viewsets.ReadOnlyModelViewSet):
     
         if queryparams_values.get('parsed') == 'true':
             notam_pk = self.kwargs.get('pk')
-            print(notam_pk)
             queryset = self.get_queryset()         
             instance = get_object_or_404(queryset,notam=notam_pk)
             serializer = self.get_serializer(instance)
@@ -65,14 +64,15 @@ class NotamsViewSet(viewsets.ReadOnlyModelViewSet):
         queryparams_values = self._get_requested_queryparams()
         requested_parsed = queryparams_values['parsed']
         requested_coordinates =  queryparams_values['coordinates']
-        notams_queryset = Notams.objects.all().order_by('id')
         match (requested_parsed,requested_coordinates):
             case 'true','false':
-                notams_queryset = ParsedNotams.objects.all().order_by('notam')
+                notams_queryset = ParsedNotams.objects.select_related('notam').order_by('notam__id')
             case 'true','true':
-                notams_queryset = ParsedNotams.objects.select_related('notam').prefetch_related('notam__coordinates').order_by('notam')
+                notams_queryset = ParsedNotams.objects.select_related('notam').prefetch_related('notam__coordinates').order_by('notam__id')
             case 'false','true':
-                notams_queryset = Notams.objects.prefetch_related('coordinates')
+                notams_queryset = Notams.objects.prefetch_related('coordinates').order_by('id')
+            case _:    
+                notams_queryset = Notams.objects.order_by('id')
 
         return notams_queryset
     

@@ -13,6 +13,7 @@ https://docs.djangoproject.com/en/5.1/ref/settings/
 from pathlib import Path
 import os
 from dotenv import load_dotenv
+from celery.schedules import crontab
 
 # Load environment variables from .env file
 load_dotenv()
@@ -146,6 +147,13 @@ DEFAULT_AUTO_FIELD = 'django.db.models.BigAutoField'
 
 # Celery settings
 CELERY_BROKER_URL = 'redis://localhost:6379/1'  # Redis URL
+
+CELERY_BEAT_SCHEDULE = {
+    'update_saved_notams':{
+        'task':'textprovider.tasks.update_saved_notams',
+        'schedule': crontab(minute='*/5')
+    } 
+}
 
 
 
