@@ -64,21 +64,24 @@ def scrap_notams(notam_link: str):
                     'td',
                     class_="textBlack12",
                     valign="top",
-                    width=''
+                    width=None
                     )
     find_non = soup.find(
                     'td',
                     class_="textRed12",
-                    align="",
-                    height=""
-                    ).text
+                    align=None,
+                    height=None
+                    )
+    if find_non:
+        number_of_notams = int(re.search(r'Number of NOTAMs:\s*?(\d+)',find_non.text).group(1))
+    else :
+        raise AttributeError(f'Failed to verify the number of Notams!')
     
-    number_of_notams = int(re.search(r'Number of NOTAMs:\s*?(\d+)',find_non).group(1))
     print(f'Number of scrapped notams : {number_of_notams}')
     
 
     if number_of_notams != len(notams):
-        raise ValueError("Failed to scrap all the Notams.")
+        raise ValueError(f'Failed to scrap all the Notams. {number_of_notams} != {len(notams)}')
     notams_text = [notam.text for notam in notams]
     return notams_text
 

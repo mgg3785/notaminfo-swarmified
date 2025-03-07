@@ -1,4 +1,4 @@
-nven/
+.venv/
 test.py
 test2.py
 dump.rdb
