@@ -21,6 +21,7 @@ dependencies = [
 
 [dependency-groups]
 dev = [
+    "locust>=2.33.1",
     "pytest>=8.3.5",
     "pytest-django>=4.10.0",
 ]
