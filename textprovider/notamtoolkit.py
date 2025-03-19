@@ -1,9 +1,11 @@
+import logging
 import re
-from requests import get
-from bs4 import BeautifulSoup
 from datetime import datetime
 from decimal import Decimal
+from bs4 import BeautifulSoup
+from requests import get
 
+logger = logging.getLogger(__name__)
 
 def dms_to_dd(dms):
 
@@ -28,14 +30,14 @@ def validate_notam(notam : str):
 def notam_parser(notam : str):
     notam = notam.strip()
     if not validate_notam(notam):
-        raise ValueError(f'Notam Invalid!')
+        raise ValueError('Notam Invalid!')
     
     sections = ['', 'Q', 'A', 'B', 'C', 'D', 'E', 'F', 'G', 'CREATED:', 'SOURCE:']
     parsed_notam = dict()
     pattern = r'(.+?)(?:Q\)(.+?))?(?:A\)(.+?))?(?:B\)(.+?))?(?:C\)(.+?))?(?:D\)(.+?))?(?:E\)(.+?))?(?:F\)(.+?))?(?:G\)(.+?))?CREATED:(.+)SOURCE:(.+)'
     match = re.search(pattern, notam, re.DOTALL)
     if not match:
-        raise ValueError(f'Parsing failed.')
+        raise ValueError('Parsing failed.')
     for sec in sections:
         grouped = match.group(sections.index(sec) + 1)
         parsed_notam[sec] = grouped.strip() if grouped else grouped
@@ -48,7 +50,7 @@ def notam_parser(notam : str):
 
 def pars_part(notam : str) -> str:
     if not validate_notam(notam):
-        raise ValueError(f'Notam Invalid!')
+        raise ValueError('Notam Invalid!')
     match = re.search(r'(.+?)[QABCDE]\)(?:.*?A\)(.+?)[QABCDEF]\))?',notam, re.DOTALL)
     if match:
         identifier = match.group(1).strip()
@@ -75,13 +77,13 @@ def scrap_notams(notam_link: str):
     if find_non:
         number_of_notams = int(re.search(r'Number of NOTAMs:\s*?(\d+)',find_non.text).group(1))
     else :
-        raise AttributeError(f'Failed to verify the number of Notams!')
+        raise AttributeError('Failed to verify the number of Notams!')
     
-    print(f'Number of scrapped notams : {number_of_notams}')
+    logger.info(f'Number of scrapped notams : {number_of_notams}')
     
 
     if number_of_notams != len(notams):
-        raise ValueError(f'Failed to scrap all the Notams. {number_of_notams} != {len(notams)}')
+        raise ValueError('Failed to scrap all the Notams.')
     notams_text = [notam.text for notam in notams]
     return notams_text
 

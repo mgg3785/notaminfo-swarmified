@@ -1,12 +1,16 @@
+import logging
 from celery import shared_task
-from .notamtoolkit import scrap_notams, notam_parser, pars_part, convert_time_standard
 from django.conf import settings
 from django.db import transaction
-from textprovider.models import Notams, ParsedNotams, Coordinates
 from django.utils import timezone
+from textprovider.models import Coordinates, Notams, ParsedNotams
+from .notamtoolkit import convert_time_standard, notam_parser, pars_part, scrap_notams
 
-@shared_task
-def update_saved_notams():
+
+logger = logging.getLogger(__name__)
+
+@shared_task(bind=True)
+def update_saved_notams(self):
     notams : list[str] = []
     base_url : str = settings.SCRAPPING_URL
     locations : list = settings.SCRAPPING_LOCATIONS
@@ -17,20 +21,20 @@ def update_saved_notams():
             scrapped = scrap_notams(base_url.replace(r'{LOCATION_ID}',location))
             notams.extend(scrapped)
         except Exception as error:
-            print(f'Exception occurred when scrapping from web (location = {location}): \n{error}')
-            continue
-      
+            logger.error(f'Exception occurred when scrapping from web (location = {location}):')
+            raise error
+
     notam_objects = []
     parsed_notam_objects = []
     coordinate_objects = []
-    
+
     #Saving notams in db
     stripped_notams = {notam.strip() for notam in notams}
     for notam_text in stripped_notams:
         try:
             part = pars_part(notam_text)
         except Exception as error:
-            print(f'Parsing process failed when using "pars_part": {error}')
+            logger.warning(f'Parsing process failed when using "pars_part": {error}')
             continue
 
         notam = Notams(notam_text = notam_text, part=part )
@@ -38,7 +42,8 @@ def update_saved_notams():
     try:
         Notams.objects.bulk_create(notam_objects, ignore_conflicts=True)
     except Exception as error:
-        print(f'Exception occurred when saving in Notams : {error}')
+        logger.critical(f'Exception occurred when saving in Notams : {error}')
+        raise error
 
     #clearing outdated notams
     cleared = []
@@ -49,7 +54,7 @@ def update_saved_notams():
         if notam['notam_text'] not in stripped_notams:
             Notams.objects.filter(pk=notam['id']).delete()
             cleared.append(notam['part'])
-    print(f'{cleared=}')
+    logger.info(f'{cleared=}')
 
 
     with transaction.atomic():
@@ -59,7 +64,7 @@ def update_saved_notams():
             try:
                 parsed = notam_parser(not_parsed_notam.notam_text)
             except Exception as error:
-                print(f'Parsing process failed when using "notam_parser" :\n{error}\tid : {not_parsed_notam.part}')
+                logger.warning(f'Parsing process failed when using "notam_parser" :\tid = {not_parsed_notam.part}\n{error}')
                 continue      
             parsed_notam_obj = ParsedNotams(
                                     notam = not_parsed_notam,
@@ -85,11 +90,10 @@ def update_saved_notams():
                                     longitude = raw_coordinate[1]
                                     )
                 coordinate_objects.append(coordinate)
-        print(f'parsed notams to be saved : {len(parsed_notam_objects)}')
-        print(f'coordinates to be saved : {len(coordinate_objects)}')
+        logger.info(f'parsed notams to be saved : {len(parsed_notam_objects)}')
+        logger.info(f'coordinates to be saved : {len(coordinate_objects)}')
         try:
             ParsedNotams.objects.bulk_create(parsed_notam_objects, ignore_conflicts=True)
             Coordinates.objects.bulk_create(coordinate_objects, ignore_conflicts=True)
         except Exception as error:
-            print(f'Exception occurred when saving parsed_notams or coordinates : {error}')
-        
+            logger.error(f'Exception occurred when saving parsed_notams or coordinates : {error}')

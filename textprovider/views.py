@@ -1,10 +1,10 @@
-from rest_framework import viewsets, status
-from .models import Notams, ParsedNotams
-from . import serializers
-from .pagination import NotamsPagination
+from django.shortcuts import get_object_or_404
+from rest_framework import status, viewsets
 from rest_framework.response import Response
 from rest_framework_api_key.permissions import HasAPIKey
-from django.shortcuts import get_object_or_404
+from . import serializers
+from .models import Notams, ParsedNotams
+from .pagination import NotamsPagination
 
 
 class NotamsViewSet(viewsets.ReadOnlyModelViewSet):
@@ -13,10 +13,7 @@ class NotamsViewSet(viewsets.ReadOnlyModelViewSet):
     requested_parsed = 'false'
     
     # param : (valid values)
-    queryparams  = {
-        'parsed':('true','false'),
-        'coordinates':('true','false')
-                    } 
+    queryparams  = {'parsed':('true','false'),'coordinates':('true','false')} 
                     
     def _get_requested_queryparams(self, queryparams: list | tuple = None):
         if queryparams is None:
@@ -78,7 +75,6 @@ class NotamsViewSet(viewsets.ReadOnlyModelViewSet):
     
     def get_serializer_class(self):
         queryparams_values = self._get_requested_queryparams()
-        print(queryparams_values)
         requested_parsed = queryparams_values['parsed']
         requested_coordinates =  queryparams_values['coordinates']
         notams_serializer = serializers.NotamsSerializer
