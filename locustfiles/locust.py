@@ -1,5 +1,5 @@
 import os, django
-os.environ.setdefault('DJANGO_SETTINGS_MODULE', 'notaminfo.settings')
+os.environ.setdefault('DJANGO_SETTINGS_MODULE', 'notaminfo.settings.dev')
 django.setup()
 
 from random import choice, randint

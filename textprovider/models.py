@@ -32,4 +32,3 @@ class Coordinates(models.Model):
 
     class Meta:
         unique_together = ('latitude','longitude')
-
