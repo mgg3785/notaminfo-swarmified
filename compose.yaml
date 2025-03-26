@@ -1,0 +1,80 @@
+name: notaminfo
+
+services:
+    app:
+        build: .
+        image: notaminfo-drf-image
+        container_name: django-container
+        command: sh -c "uv run manage.py makemigrations && uv run manage.py migrate && uv run manage.py runserver 0.0.0.0:8000"
+        volumes:
+            - .:/app/
+            - /tmp/app/mysqld:/run/mysqld
+        ports:
+            - "8000:8000"
+        environment:
+            DJANGO_SETTINGS_MODULE: notaminfo.settings.dockerized.dev
+            DJANGO_ALLOWED_HOSTS: localhost 127.0.0.1
+        depends_on:
+            - db
+            - redis 
+    db:
+        image: mysql:9
+        ports:
+            - "33062:3306"
+        expose: 
+            - '3306'
+        environment:
+            MYSQL_DATABASE: saved_notams
+            MYSQL_ROOT_PASSWORD: 12345678
+            # MYSQL_DATABASE: ${DATABASE_NAME}
+            # MYSQL_ROOT_PASSWORD: ${DATABASE_PASSWORD}
+        volumes:
+            - mysql_data:/var/lib/mysql       
+    redis:
+        image: "redis:alpine"
+        container_name: redis-container
+        expose:
+        - 6379
+        ports:
+        - "6379:6379"
+        restart: unless-stopped
+        volumes:
+            - redis_data:/data
+    celery:
+        image: notaminfo-drf-image
+        container_name: celery-container
+        command: uv run celery -A notaminfo worker --loglevel=info
+        depends_on:
+        - app
+        - redis
+        environment:
+            DJANGO_SETTINGS_MODULE: notaminfo.settings.dockerized.dev
+
+    beat:
+        image: notaminfo-drf-image
+        container_name: beat-container
+        command: uv run celery -A notaminfo beat --loglevel=info
+        depends_on:
+        - app
+        - redis
+        - celery
+        environment:
+            DJANGO_SETTINGS_MODULE: notaminfo.settings.dockerized.dev
+
+    flower:
+        image: notaminfo-drf-image
+        container_name: flower-container
+        command: uv run celery -A notaminfo flower --port=5555
+        ports: 
+            - 5555:5555
+        depends_on:
+        - app
+        - redis
+        - celery
+        environment:
+            DJANGO_SETTINGS_MODULE: notaminfo.settings.dockerized.dev
+
+
+volumes:
+  mysql_data:
+  redis_data:

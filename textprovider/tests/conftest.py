@@ -10,6 +10,6 @@ def api_client() -> APIClient:
 @pytest.fixture(scope='function')
 def authenticate(api_client : APIClient):
     def do_authenticate(revoked=False):
-        key = APIKey.objects.create_key(name='Test',revoked=revoked)
-        api_client.credentials(HTTP_AUTHORIZATION= f'Api-Key {key[-1]}')
+        key = APIKey.objects.create_key(name='Test',revoked=revoked)[-1]
+        api_client.credentials(HTTP_AUTHORIZATION= f'Api-Key {key}')
     return do_authenticate

@@ -1,0 +1,9 @@
+.venv/
+test.py
+test2.py
+dump.rdb
+__pycache__/
+api.http
+.vscode/
+.pytest_cache/
+celerybeat-schedule
