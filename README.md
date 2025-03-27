@@ -17,28 +17,6 @@ This project focuses on extracting and processing NOTAM (Notices to Airmen) text
 ## 🚀 Project Milestones  
 - [x] Implementing MVP   
 - [x] Using `UV` for dependency management   
-- [ ] Dockerization  
-- [ ] Adding extra features      
-
-# NOTAM Extraction & Parsing API with Django 🚀  
-
-This repository is part of my journey in learning backend development with Django. Through this project, I’m gaining hands-on experience with building APIs, handling databases, working with background tasks, and data extraction.  
-
-## ✨ Project Overview  
-
-This project focuses on extracting and processing NOTAM (Notices to Airmen) texts, making them accessible via an API. The system is built with Django, Django REST Framework, Celery, and MySQL.  
-
-### 🛠 Features  
-🔍 **Automated NOTAM Extraction** – Uses web scraping to retrieve NOTAM texts  
-🗄️ **Database Storage** – Stores extracted NOTAMs in a MySQL database  
-📑 **Efficient Parsing** – Extracts relevant information from NOTAMs  
-🌐 **REST API** – Provides a single API endpoint for accessing structured NOTAM data  
-⚡ **Asynchronous Processing** – Utilizes Celery for background tasks  
-🔑 **API Key Authentication** – Protects the API using `djangorestframework-api-key`  
-
-## 🚀 Project Milestones  
-- [x] Implementing MVP   
-- [x] Using `UV` for dependency management   
 - [x] Dockerization  
 - [ ] Adding extra features      
 
