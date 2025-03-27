@@ -2,6 +2,9 @@ from django.shortcuts import get_object_or_404
 from rest_framework import status, viewsets
 from rest_framework.response import Response
 from rest_framework_api_key.permissions import HasAPIKey
+from django_filters.rest_framework import DjangoFilterBackend
+
+from textprovider.filters import NotamsFilter
 from . import serializers
 from .models import Notams, ParsedNotams
 from .pagination import NotamsPagination
@@ -10,10 +13,13 @@ from .pagination import NotamsPagination
 class NotamsViewSet(viewsets.ReadOnlyModelViewSet):
     pagination_class = NotamsPagination
     permission_classes = [HasAPIKey]
+    filter_backends = [DjangoFilterBackend]
+    filterset_class = NotamsFilter
     requested_parsed = 'false'
-    
+
     # param : (valid values)
     queryparams  = {'parsed':('true','false'),'coordinates':('true','false')} 
+
                     
     def _get_requested_queryparams(self, queryparams: list | tuple = None):
         if queryparams is None:
