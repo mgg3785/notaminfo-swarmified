@@ -26,3 +26,11 @@ class ParsedNotamsIncludeCoordinatesSerializer(ParsedNotamsSerializer):
     coordinates = CoordniatesSerializer(source='notam.coordinates',many=True,read_only=True)
     class Meta(ParsedNotamsSerializer.Meta):
         fields = ParsedNotamsSerializer.Meta.fields + ['coordinates']
+
+class QueryParamsSerializer(serializers.Serializer):
+    choices = (('true', 'true'), ('false', 'false'))
+
+    parsed = serializers.ChoiceField(choices=choices, required=False)
+    coordinates = serializers.ChoiceField(choices=choices, required=False)
+    search = serializers.CharField(allow_null=True, required=False)
+    

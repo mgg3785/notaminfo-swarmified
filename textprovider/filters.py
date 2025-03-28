@@ -1,5 +1,4 @@
 from django_filters.rest_framework import FilterSet, CharFilter
-
 from textprovider.models import Notams, ParsedNotams
 
 class NotamsFilter(FilterSet):

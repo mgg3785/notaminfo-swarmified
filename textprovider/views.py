@@ -17,37 +17,22 @@ class NotamsViewSet(viewsets.ReadOnlyModelViewSet):
     filterset_class = NotamsFilter
     requested_parsed = 'false'
 
-    # param : (valid values)
-    queryparams  = {'parsed':('true','false'),'coordinates':('true','false')} 
-
-                    
-    def _get_requested_queryparams(self, queryparams: list | tuple = None):
-        if queryparams is None:
-            queryparams = self.queryparams.keys()
-
-        requested_queryparams = dict()
-        for queryparam in queryparams:
-            queryparam_value = self.request.query_params.get(queryparam,'').lower()
-            requested_queryparams[queryparam] = queryparam_value if queryparam_value else 'false'
-        return requested_queryparams
-
     def _validate_queryparams(self, requested_queryparams : dict):
-        for validating_param in requested_queryparams.keys():
-            valid_values = self.queryparams[validating_param]
-            if requested_queryparams[validating_param] not in valid_values:
-                return Response(
-                    {'error': f"Invalid value, expected valid values : {valid_values}."},
-                    status=status.HTTP_400_BAD_REQUEST
-                )
-        return None
+        serializer = serializers.QueryParamsSerializer(data=self.request.query_params)
+        validation_result = serializer.is_valid()
+        if validation_result:
+            validation_error = False
+        else:
+            validation_error = Response({'error': f"Invalid value."}, status=status.HTTP_400_BAD_REQUEST)
+        return validation_error
+
 
     def retrieve(self, request, *args, **kwargs):
-        queryparams_values = self._get_requested_queryparams()
-        validation_error = self._validate_queryparams(queryparams_values)
+        validation_error = self._validate_queryparams(self.request.query_params)
         if validation_error:
             return validation_error
     
-        if queryparams_values.get('parsed') == 'true':
+        if self.request.query_params.get('parsed') == 'true':
             notam_pk = self.kwargs.get('pk')
             queryset = self.get_queryset()         
             instance = get_object_or_404(queryset,notam=notam_pk)
@@ -57,16 +42,14 @@ class NotamsViewSet(viewsets.ReadOnlyModelViewSet):
         return super().retrieve(request, *args, **kwargs)
     
     def list(self, request, *args, **kwargs):
-        queryparams_values = self._get_requested_queryparams()
-        validation_error = self._validate_queryparams(queryparams_values)
+        validation_error = self._validate_queryparams(self.request.query_params)
         if validation_error:
             return validation_error
         return super().list(request, *args, **kwargs)
         
     def get_queryset(self):
-        queryparams_values = self._get_requested_queryparams()
-        requested_parsed = queryparams_values['parsed']
-        requested_coordinates =  queryparams_values['coordinates']
+        requested_parsed = self.request.query_params.get('parsed','false')
+        requested_coordinates =  self.request.query_params.get('coordinates','false')
         match (requested_parsed,requested_coordinates):
             case 'true','false':
                 notams_queryset = ParsedNotams.objects.select_related('notam').order_by('notam__id')
@@ -80,9 +63,8 @@ class NotamsViewSet(viewsets.ReadOnlyModelViewSet):
         return notams_queryset
     
     def get_serializer_class(self):
-        queryparams_values = self._get_requested_queryparams()
-        requested_parsed = queryparams_values['parsed']
-        requested_coordinates =  queryparams_values['coordinates']
+        requested_parsed = self.request.query_params.get('parsed','false')
+        requested_coordinates =  self.request.query_params.get('coordinates','false')
         notams_serializer = serializers.NotamsSerializer
         match (requested_parsed,requested_coordinates):
             case 'true','false':
