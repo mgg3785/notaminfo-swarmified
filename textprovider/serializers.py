@@ -1,5 +1,10 @@
+from MySQLdb import BINARY
 from rest_framework import serializers
 from .models import Notams, ParsedNotams, Coordinates
+
+class CaseInsensitiveChoiceField(serializers.ChoiceField):
+    def to_internal_value(self, data:str):
+        return super().to_internal_value(data.lower())
 
 class CoordniatesSerializer(serializers.ModelSerializer):
     class Meta:
@@ -27,10 +32,11 @@ class ParsedNotamsIncludeCoordinatesSerializer(ParsedNotamsSerializer):
     class Meta(ParsedNotamsSerializer.Meta):
         fields = ParsedNotamsSerializer.Meta.fields + ['coordinates']
 
+# used to validate query params
 class QueryParamsSerializer(serializers.Serializer):
-    choices = (('true', 'true'), ('false', 'false'))
+    BINARY_CHOICES = ['true','false']
 
-    parsed = serializers.ChoiceField(choices=choices, required=False)
-    coordinates = serializers.ChoiceField(choices=choices, required=False)
+    parsed = CaseInsensitiveChoiceField(choices=BINARY_CHOICES, required=False)
+    coordinates = CaseInsensitiveChoiceField(choices=BINARY_CHOICES, required=False)
     search = serializers.CharField(allow_null=True, required=False)
     
