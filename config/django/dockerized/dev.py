@@ -1,8 +1,5 @@
-from .common import *
-
-DEBUG = True
-
-SECRET_KEY = 'django-insecure-82x2f8ej7cwkf!*#ovw9t198y^fjz*f+mq_fd&cdkh!wj(dn70'
+from config.django.dev import *
+#  settings for docker in development
 
 DATABASES = {
     'default': {
@@ -10,7 +7,9 @@ DATABASES = {
         'NAME': 'saved_notams',
         'USER': 'root',
         'PASSWORD': '12345678',
-        'HOST':'localhost',
+        'HOST':'db',
         'PORT':'3306',
     }
 }
+
+CELERY_BROKER_URL = 'redis://redis:6379/1'  # Redis URL

@@ -13,7 +13,7 @@ RUN apt update && apt install -y \
     gcc \
     musl-dev
     
-RUN uv sync
-
+RUN uv sync \
+    --no-dev 
 
 CMD ["uv", "run", "manage.py", "runserver", "0.0.0.0:8000"]
