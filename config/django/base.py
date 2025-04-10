@@ -11,7 +11,6 @@ https://docs.djangoproject.com/en/5.1/ref/settings/
 """
 
 import os
-from celery.schedules import crontab
 from config.env import env, BASE_DIR
 
 env.read_env(os.path.join(BASE_DIR, ".env"))
@@ -86,7 +85,7 @@ TEMPLATES = [
 WSGI_APPLICATION = 'config.wsgi.application'
 
 # Database
-DATABASE_URL = env.db('DATABASE_URL')
+DATABASE_URL = env.db('DATABASE_URL',default=None)
 if DATABASE_URL:
     DATABASES = {
         'default': DATABASE_URL
@@ -144,16 +143,6 @@ STATIC_ROOT = os.path.join(BASE_DIR, 'staticfiles')
 
 DEFAULT_AUTO_FIELD = 'django.db.models.BigAutoField'
 
-# Celery settings
-CELERY_BROKER_URL = env('CELERY_BROKER_URL',default='redis://localhost:6379/1')  # Redis URL
-
-CELERY_BEAT_SCHEDULE = {
-    'update_saved_notams':{
-        'task':'textprovider.tasks.update_saved_notams',
-        'schedule': crontab(minute='*/5')
-    } 
-}
-
 
 
 # Webscrapping settings
@@ -192,3 +181,7 @@ LOGGING = {
         }
     }
 }
+
+
+
+from config.settings.celery import *
