@@ -1,5 +1,7 @@
 import logging
 import re
+import aiohttp
+import asyncio
 from datetime import datetime
 from decimal import Decimal
 from bs4 import BeautifulSoup
@@ -62,35 +64,53 @@ class NotamParser:
         parsed_notam = {k:v.strip() if isinstance(v,str) else '' for k,v in match.groupdict().items()}
         parsed_notam['coordinates'] = self._match_coordinates(notam)
         return parsed_notam
-
-def scrap_notams(notam_link: str):
-    html_text = get(notam_link).text
-    soup = BeautifulSoup(html_text,'lxml')
-
-    notams = soup.find_all(
-                    'td',
-                    class_="textBlack12",
-                    valign="top",
-                    width=None
-                    )
-    find_non = soup.find(
-                    'td',
-                    class_="textRed12",
-                    align=None,
-                    height=None
-                    )
-    if find_non:
-        number_of_notams = int(re.search(r'Number of NOTAMs:\s*?(\d+)',find_non.text).group(1))
-    else :
-        raise AttributeError('Failed to verify the number of Notams!')
-    
-    logger.info(f'Number of scrapped notams : {number_of_notams}')
     
 
-    if number_of_notams != len(notams):
-        raise ValueError('Failed to scrap all the Notams.')
-    notams_text = [notam.text for notam in notams]
-    return notams_text
+class NotamScrapper:
+    def __init__(self, base_link, locations):
+        self.base_link = base_link
+        self.locations = locations
+
+    def _soup_find_notams(self, html_text, url):
+        soup = BeautifulSoup(html_text,'lxml')
+
+        notams = soup.find_all(
+                        'td',
+                        class_="textBlack12",
+                        valign="top",
+                        width=None
+                        )
+        find_non = soup.find(
+                        'td',
+                        class_="textRed12",
+                        align=None,
+                        height=None
+                        )
+        if find_non:
+            number_of_notams = int(re.search(r'Number of NOTAMs:\s*?(\d+)',find_non.text).group(1))
+        else :
+            raise AttributeError(f'Failed to verify the number of Notams! \n{url}')
+        
+        logger.info(f'Number of scrapped notams : {number_of_notams}')
+        
+
+        if number_of_notams != len(notams):
+            raise ValueError('Failed to scrap all the Notams.')
+        notam_texts = [notam.text for notam in notams]
+        return notam_texts
+
+    async def _fetch(self, client : aiohttp.ClientSession, link : str):
+        async with client.get(url=link) as response:
+            return await response.text(), response.url
+        
+    async def scrap_notams(self):
+        tasks = []
+        async with aiohttp.ClientSession() as client:
+            tasks = [self._fetch(client, self.base_link.format(LOCATION_ID=location)) for location in self.locations]
+            responses = await asyncio.gather(*tasks)
+        soup_results = [self._soup_find_notams(*response) for response in responses]
+        return sum(soup_results,[])
+
 
 def convert_time_standard(time : str):
     time_format = r"%d %b %Y %H:%M:%S"

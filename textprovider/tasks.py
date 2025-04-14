@@ -1,10 +1,11 @@
+import asyncio
 import logging
 from celery import shared_task
 from django.conf import settings
 from django.db import transaction
 from django.utils import timezone
 from textprovider.models import Coordinates, Notams, ParsedNotams
-from .notamtoolkit import NotamParser, convert_time_standard, scrap_notams
+from .notamtoolkit import NotamParser, convert_time_standard, NotamScrapper
 
 
 logger = logging.getLogger(__name__)
@@ -12,17 +13,15 @@ logger = logging.getLogger(__name__)
 @shared_task(bind=True)
 def update_saved_notams(self):
     notams : list[str] = []
-    base_url : str = settings.SCRAPPING_URL
-    locations : list = settings.SCRAPPING_LOCATIONS
+    base_url : str = settings.SCRAPING_URL
+    locations : list = settings.SCRAPING_LOCATIONS
 
-    #Webscrapping notams
-    for location in locations:
-        try:
-            scrapped = scrap_notams(base_url.replace(r'{LOCATION_ID}',location))
-            notams.extend(scrapped)
-        except Exception as error:
-            logger.error(f'Exception occurred when scrapping from web (location = {location}):')
-            raise error
+    #Web scraping notams
+    try:
+        scrapper = NotamScrapper(base_url, locations)
+        notams = asyncio.run(scrapper.scrap_notams())
+    except Exception as error:
+        logger.critical('Failed in web scraping notams')
 
     notam_objects = []
     parsed_notam_objects = []

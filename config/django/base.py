@@ -145,10 +145,10 @@ DEFAULT_AUTO_FIELD = 'django.db.models.BigAutoField'
 
 
 
-# Webscrapping settings
-SCRAPPING_URL = r'https://www.notams.faa.gov/dinsQueryWeb/queryRetrievalMapAction.do?reportType=Raw&retrieveLocId={LOCATION_ID}&actionType=notamRetrievalbyICAOs'
+# Web scraping settings
+SCRAPING_URL = r'https://www.notams.faa.gov/dinsQueryWeb/queryRetrievalMapAction.do?reportType=Raw&retrieveLocId={LOCATION_ID}&actionType=notamRetrievalbyICAOs'
 
-SCRAPPING_LOCATIONS = [
+SCRAPING_LOCATIONS = [
     'oiix', #Iran
     'oejd' #Saudi Arabia
 ]
