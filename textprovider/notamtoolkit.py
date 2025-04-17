@@ -66,7 +66,7 @@ class NotamParser:
         return parsed_notam
     
 
-class NotamScrapper:
+class NotamScraper:
     def __init__(self, base_link, locations):
         self.base_link = base_link
         self.locations = locations

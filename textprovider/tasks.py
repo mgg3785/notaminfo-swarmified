@@ -5,7 +5,7 @@ from django.conf import settings
 from django.db import transaction
 from django.utils import timezone
 from textprovider.models import Coordinates, Notams, ParsedNotams
-from .notamtoolkit import NotamParser, convert_time_standard, NotamScrapper
+from .notamtoolkit import NotamParser, convert_time_standard, NotamScraper
 
 
 logger = logging.getLogger(__name__)
@@ -18,10 +18,11 @@ def update_saved_notams(self):
 
     #Web scraping notams
     try:
-        scrapper = NotamScrapper(base_url, locations)
+        scrapper = NotamScraper(base_url, locations)
         notams = asyncio.run(scrapper.scrap_notams())
     except Exception as error:
         logger.critical('Failed in web scraping notams')
+        raise error
 
     notam_objects = []
     parsed_notam_objects = []
