@@ -7,6 +7,9 @@ pipeline {
 
     stages {
         stage('Build') {
+            agent {
+                docker 'docker'
+            }
             steps {
                 sh 'docker build -t notaminfo -f "notaminfo.Dockerfile" .'
             }
