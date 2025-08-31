@@ -11,7 +11,10 @@ pipeline {
                 docker 'docker'
             }
             steps {
-                sh 'docker build -t notaminfo -f "notaminfo.Dockerfile" .'
+                sh '''
+                    sudo usermod -a -G docker jenkins
+                    docker build -t notaminfo -f "notaminfo.Dockerfile" .
+                    '''
             }
         }
     }
