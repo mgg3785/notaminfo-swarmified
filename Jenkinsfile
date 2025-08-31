@@ -6,12 +6,12 @@ pipeline {
     }
 
     stages {
-        stage('Hello') {
+        stage('Build') {
             agent {
                 docker 'alpine'
             }
             steps {
-                sh 'uname -a'
+                sh 'docker build -t notaminfo -f "notaminfo.Dockerfile" .'
             }
         }
     }
