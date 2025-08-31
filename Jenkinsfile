@@ -7,13 +7,20 @@ pipeline {
 
     stages {
         stage('Build') {
-            agent {
-                docker 'docker'
-            }
             steps {
                 sh '''
-                    sudo usermod -a -G docker jenkins
                     docker build -t notaminfo -f "notaminfo.Dockerfile" .
+                    docker image ls
+                '''
+            }
+        }
+        stage('test') {
+            steps {
+                sh '''
+                    docker compose -f "compose.yaml" up -d
+                    docker ps
+                    docker compose exec -T django uv run pytest
+                    docker compose down
                     '''
             }
         }
