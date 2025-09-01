@@ -9,7 +9,7 @@ COPY . /app
 RUN apt-get update && apt-get install -y \
     default-libmysqlclient-dev \
     build-essential \
-    pkg-config \
+    pkg-config
 # RUN apk add --no-cache \
 #     mariadb-client \
 #     mariadb-connector-c-dev \
