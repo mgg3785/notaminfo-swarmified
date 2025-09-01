@@ -19,6 +19,7 @@ pipeline {
                 sh '''
                     docker compose -f "compose.yaml" up -d
                     docker ps
+                    docker compose logs > docker-test.logs
                     docker compose exec -T django uv run pytest
                     docker compose down
                     '''
@@ -34,7 +35,7 @@ pipeline {
                     docker load -i notaminfo.tar
                     docker compose up -d
                     sleep 10
-                    docker compose logs
+                    docker compose logs > docker-deploy.logs
                     exit
                 '''
             }
