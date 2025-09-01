@@ -24,6 +24,17 @@ pipeline {
                     '''
             }
         }
+        stage('deploy') {
+            steps {
+                sh '''
+                    docker save notaminfo -o notaminfo.tar
+                    yes | scp notaminfo.tar root@deploy-server
+                    ssh root@deploy-server
+                    docker load -i notaminfo.tar
+
+                '''
+            }
+        }
     }
     post {
         success {

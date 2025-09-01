@@ -1,4 +1,4 @@
-FROM ghcr.io/astral-sh/uv:python3.13-bookworm-slim
+FROM python:3.13-alpine
 
 ENV PYTHONDONTWRITEBYTECODE=1
 ENV PYTHONUNBUFFERED=1
@@ -6,14 +6,15 @@ ENV PYTHONUNBUFFERED=1
 WORKDIR /app
 COPY . /app
 
-RUN apt update && apt install -y \
+RUN apk add --no-cache \
     mariadb-client \
-    default-libmysqlclient-dev \
-    pkg-config \
+    mariadb-connector-c-dev \
+    pkgconfig \
     gcc \
-    musl-dev
-    
-RUN uv sync \
-    --no-dev 
+    musl-dev \
+    linux-headers
+
+RUN pip install uv
+RUN uv sync
 
 CMD ["uv", "run", "manage.py", "runserver", "0.0.0.0:8000"]
