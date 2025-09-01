@@ -9,6 +9,7 @@ COPY . /app
 RUN apk add --no-cache \
     mariadb-client \
     mariadb-connector-c-dev \
+    mariadb-dev \
     pkgconfig \
     gcc \
     musl-dev \
