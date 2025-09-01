@@ -19,6 +19,6 @@ RUN apt-get update && apt-get install -y \
 #     musl-dev \
 #     linux-headers
 
-RUN pip install -no-cache-dir uv && uv sync
+RUN pip install --no-cache-dir uv && uv sync
 
 CMD ["uv", "run", "manage.py", "runserver", "0.0.0.0:8000"]
