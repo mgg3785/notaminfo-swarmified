@@ -1,5 +1,8 @@
 pipeline {
     agent any
+    environment {
+        SSH_OPTIONS='-o StrictHostKeyChecking=no -i $HOME/.ssh/id_ed25519'
+    }
 
     stages {
         stage('Build') {
@@ -27,9 +30,9 @@ pipeline {
                 sh '''
                     export COMPOSE_ENV_FILES=.env.test
                     docker save notaminfo -o notaminfo.tar
-                    scp -o StrictHostKeyChecking=no notaminfo.tar root@deploy-server:/app
-                    scp -o StrictHostKeyChecking=no compose.yaml root@deploy-server:/app
-                    ssh -T -o StrictHostKeyChecking=no root@deploy-server /bin/sh << EOT
+                    scp $SSH_OPTIONS notaminfo.tar root@deploy-server:/app
+                    scp $SSH_OPTIONS compose.yaml root@deploy-server:/app
+                    ssh -T $SSH_OPTIONS root@deploy-server /bin/sh << EOT
                     cd /app
                     docker load -i notaminfo.tar
                     docker compose up -d
