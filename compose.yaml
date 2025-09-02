@@ -10,8 +10,15 @@ services:
         environment:
             MYSQL_DATABASE: saved_notams
             MYSQL_ROOT_PASSWORD: 12345678
+            MYSQL_SSL_DISABLED: true
         volumes:
-            - mysql_data:/var/lib/mysql       
+            - mysql_data:/var/lib/mysql 
+        healthcheck:
+            test: ["CMD-SHELL", "mysqladmin ping -h localhost -u root --password=12345678"]
+            interval: 15s
+            timeout: 20s
+            retries: 10   
+            start_period: 30s      
     redis:
         image: redis:alpine
         container_name: redis-container
@@ -34,10 +41,12 @@ services:
         ports:
             - 8000:8000
         depends_on:
-            - db
-            - redis 
+            db:
+                condition: service_healthy
+            redis:
+                condition: service_started
         environment:
-            DATABASE_URL: mysql://root:12345678@db:3306/saved_notams
+            DATABASE_URL: mysql://root:12345678@db:3306/saved_notams?useSSL=false
             CELERY_BROKER_URL: redis://redis:6379/1
     celery:
         image: notaminfo
@@ -47,7 +56,7 @@ services:
         - django
         - redis
         environment:
-            DATABASE_URL: mysql://root:12345678@db:3306/saved_notams
+            DATABASE_URL: mysql://root:12345678@db:3306/saved_notams?useSSL=false
             CELERY_BROKER_URL: redis://redis:6379/1
 
     beat:
@@ -59,7 +68,7 @@ services:
         - redis
         - celery
         environment:
-            DATABASE_URL: mysql://root:12345678@db:3306/saved_notams
+            DATABASE_URL: mysql://root:12345678@db:3306/saved_notams?useSSL=false
             CELERY_BROKER_URL: redis://redis:6379/1
 
     flower:
@@ -73,7 +82,7 @@ services:
         - redis
         - celery
         environment:
-            DATABASE_URL: mysql://root:12345678@db:3306/saved_notams
+            DATABASE_URL: mysql://root:12345678@db:3306/saved_notams?useSSL=false
             CELERY_BROKER_URL: redis://redis:6379/1
 
 
