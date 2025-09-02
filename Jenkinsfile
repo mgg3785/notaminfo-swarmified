@@ -1,7 +1,7 @@
 pipeline {
     agent any
     environment {
-        SSH_OPTIONS='-o StrictHostKeyChecking=no -i $HOME/.ssh/id_ed25519'
+        SSH_OPTIONS='-o StrictHostKeyChecking=no -i /home/jenkins/.ssh/id_ed25519'
     }
 
     stages {
