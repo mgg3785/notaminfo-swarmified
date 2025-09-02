@@ -27,8 +27,8 @@ pipeline {
                 sh '''
                     export COMPOSE_ENV_FILES=.env.test
                     docker save notaminfo -o notaminfo.tar
-                    scp notaminfo.tar root@deploy-server:/app
-                    scp compose.yaml root@deploy-server:/app
+                    scp -o StrictHostKeyChecking=no notaminfo.tar root@deploy-server:/app
+                    scp -o StrictHostKeyChecking=no compose.yaml root@deploy-server:/app
                     ssh -T -o StrictHostKeyChecking=no root@deploy-server /bin/sh << EOT
                     cd /app
                     docker load -i notaminfo.tar
