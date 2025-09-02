@@ -29,12 +29,12 @@ pipeline {
                     docker save notaminfo -o notaminfo.tar
                     yes | scp notaminfo.tar root@deploy-server
                     scp compose.yaml root@deploy-server
-                    ssh -T -o StrictHostKeyChecking=no root@deploy-server
+                    ssh -T -o StrictHostKeyChecking=no root@deploy-server /bin/sh << EOT
                     docker load -i notaminfo.tar
                     docker compose up -d
                     sleep 10
                     docker compose logs > docker-deploy.logs
-                    exit
+                    EOT
                 '''
             }
         }
