@@ -5,7 +5,6 @@ import asyncio
 from datetime import datetime
 from decimal import Decimal
 from bs4 import BeautifulSoup
-from requests import get
 
 logger = logging.getLogger(__name__)
 

@@ -7,9 +7,6 @@ WORKDIR /app
 COPY . /app
 
 RUN apk add --no-cache \
-    mariadb-client \
-    mariadb-connector-c-dev \
-    mariadb-dev \
     pkgconfig \
     gcc \
     musl-dev \
@@ -17,5 +14,6 @@ RUN apk add --no-cache \
 
 RUN pip install --no-cache-dir uv
 RUN uv sync
+RUN uv pip install psycopg[binary]
 
 CMD ["uv", "run", "manage.py", "runserver", "0.0.0.0:8000"]

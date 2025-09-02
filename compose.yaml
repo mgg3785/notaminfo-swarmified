@@ -2,21 +2,19 @@ name: notaminfo
 
 services:
     db:
-        image: mysql:9
+        image: postgres:17
         ports:
-            - 33062:3306
-        expose: 
-            - 3306
+            - 5432:5432
         environment:
-            MYSQL_DATABASE: saved_notams
-            MYSQL_ROOT_PASSWORD: 12345678
-            MYSQL_SSL_DISABLED: true
+            POSTGRES_DB: ${POSTGRES_DB}
+            POSTGRES_USER: ${POSTGRES_USER}
+            POSTGRES_PASSWORD: ${POSTGRES_PASSWORD}
         volumes:
-            - mysql_data:/var/lib/mysql 
+            - postgres-data:/var/lib/postgresql/data/
         healthcheck:
-            test: ["CMD-SHELL", "mysqladmin ping -h localhost -u root --password=12345678"]
-            interval: 15s
-            timeout: 20s
+            test: ["CMD-SHELL", "pg_isready -U ${POSTGRES_USER} -d ${POSTGRES_DB}"]
+            interval: 10s
+            timeout: 10s
             retries: 10   
             start_period: 30s      
     redis:
@@ -35,6 +33,7 @@ services:
             dockerfile: notaminfo.Dockerfile  
         image: notaminfo
         command: sh -c "uv run manage.py makemigrations && uv run manage.py migrate && uv run manage.py runserver 0.0.0.0:8000"
+        # command: sleep infinity
         volumes:
             - .:/app/
             - /tmp/app/mysqld:/run/mysqld
@@ -43,11 +42,13 @@ services:
         depends_on:
             db:
                 condition: service_healthy
+                restart: true
             redis:
                 condition: service_started
         environment:
-            DATABASE_URL: mysql://root:12345678@db:3306/saved_notams?useSSL=false
             CELERY_BROKER_URL: redis://redis:6379/1
+        env_file:
+            - .env
     celery:
         image: notaminfo
         container_name: celery-container
@@ -55,10 +56,8 @@ services:
         depends_on:
         - django
         - redis
-        environment:
-            DATABASE_URL: mysql://root:12345678@db:3306/saved_notams?useSSL=false
-            CELERY_BROKER_URL: redis://redis:6379/1
-
+        env_file:
+            - .env
     beat:
         image: notaminfo
         container_name: beat-container
@@ -67,9 +66,8 @@ services:
         - django
         - redis
         - celery
-        environment:
-            DATABASE_URL: mysql://root:12345678@db:3306/saved_notams?useSSL=false
-            CELERY_BROKER_URL: redis://redis:6379/1
+        env_file:
+            - .env
 
     flower:
         image: notaminfo
@@ -81,11 +79,10 @@ services:
         - django
         - redis
         - celery
-        environment:
-            DATABASE_URL: mysql://root:12345678@db:3306/saved_notams?useSSL=false
-            CELERY_BROKER_URL: redis://redis:6379/1
+        env_file:
+            - .env
 
 
 volumes:
-  mysql_data:
+  postgres-data:
   redis_data:

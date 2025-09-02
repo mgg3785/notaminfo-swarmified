@@ -85,22 +85,33 @@ TEMPLATES = [
 WSGI_APPLICATION = 'config.wsgi.application'
 
 # Database
-DATABASE_URL = env.db('DATABASE_URL',default=None)
-if DATABASE_URL:
-    DATABASES = {
-        'default': DATABASE_URL
-    }
-else:
-    DATABASES = {
+# DATABASE_URL = env.db('DATABASE_URL',default=None)
+# if DATABASE_URL:
+#     DATABASES = {
+#         'default': DATABASE_URL
+#     }
+# else:
+#     DATABASES = {
+#     'default': {
+#         'ENGINE': 'django.db.backends.postgresql',
+#         'NAME': env('DATABASE_NAME',default='saved_notams'),
+#         'USER': env('DATABASE_USER',default='root'),
+#         'PASSWORD': env('DATABASE_PASSWORD',default='12345678'),
+#         'HOST':env('DATABASE_HOST',default='localhost'),
+#         'PORT':env('DATABASE_PORT',default='3306'),
+#     }
+# }
+DATABASES = {
     'default': {
-        'ENGINE': 'django.db.backends.mysql',
-        'NAME': env('DATABASE_NAME',default='saved_notams'),
-        'USER': env('DATABASE_USER',default='root'),
-        'PASSWORD': env('DATABASE_PASSWORD',default='12345678'),
+        'ENGINE': 'django.db.backends.postgresql',
+        'NAME': env('POSTGRES_DB',default='saved_notams'),
+        'USER': env('POSTGRES_USER',default='root'),
+        'PASSWORD': env('POSTGRES_PASSWORD',default='12345678'),
         'HOST':env('DATABASE_HOST',default='localhost'),
-        'PORT':env('DATABASE_PORT',default='3306'),
+        'PORT':env('DATABASE_PORT',default='5432'),
     }
 }
+print(DATABASES)
 
 # Password validation
 # https://docs.djangoproject.com/en/5.1/ref/settings/#auth-password-validators
