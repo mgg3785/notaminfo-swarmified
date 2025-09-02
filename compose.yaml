@@ -48,7 +48,7 @@ services:
         environment:
             CELERY_BROKER_URL: redis://redis:6379/1
         env_file:
-            - .env
+            - .env.test
     celery:
         image: notaminfo
         container_name: celery-container
@@ -57,7 +57,7 @@ services:
         - django
         - redis
         env_file:
-            - .env
+            - .env.test
     beat:
         image: notaminfo
         container_name: beat-container
@@ -67,7 +67,7 @@ services:
         - redis
         - celery
         env_file:
-            - .env
+            - .env.test
 
     flower:
         image: notaminfo
@@ -80,7 +80,7 @@ services:
         - redis
         - celery
         env_file:
-            - .env
+            - .env.test
 
 
 volumes:
