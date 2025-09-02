@@ -1,9 +1,5 @@
 pipeline {
     agent any
-    
-    environment {
-        MESSAGE='hello!'
-    }
 
     stages {
         stage('Build') {
@@ -17,6 +13,7 @@ pipeline {
         stage('test') {
             steps {
                 sh '''
+                    export COMPOSE_ENV_FILE=.env.test
                     docker compose -f "compose.yaml" up -d
                     docker ps
                     docker compose logs > docker-test.logs
@@ -28,6 +25,7 @@ pipeline {
         stage('deploy') {
             steps {
                 sh '''
+                    export COMPOSE_ENV_FILE=.env.test
                     docker save notaminfo -o notaminfo.tar
                     yes | scp notaminfo.tar root@deploy-server
                     scp compose.yaml root@deploy-server
