@@ -1,7 +1,8 @@
 pipeline {
     agent any
     environment {
-        SSH_OPTIONS='-o StrictHostKeyChecking=no -i /var/.ssh/id_ed25519'
+        JSSH_OPTIONS='-o StrictHostKeyChecking=no'
+        JSSH_KEY='/var/.ssh/id_ed25519'
     }
 
     stages {
@@ -30,9 +31,12 @@ pipeline {
                 sh '''
                     export COMPOSE_ENV_FILES=.env.test
                     docker save notaminfo -o notaminfo.tar
-                    scp $SSH_OPTIONS notaminfo.tar root@deploy-server:/app
-                    scp $SSH_OPTIONS compose.yaml root@deploy-server:/app
-                    ssh -T $SSH_OPTIONS root@deploy-server /bin/sh << EOT
+                    eval "$(ssh-agent -s)"
+                    ssh-add $JSSH_KEY
+                    ssh $JSSH_OPTIONS root@deploy-server "mkdir -p /app && chmod 755 /app"
+                    scp $JSSH_OPTIONS notaminfo.tar root@deploy-server:/app/
+                    scp $JSSH_OPTIONS compose.yaml root@deploy-server:/app/
+                    ssh $JSSH_OPTIONS root@deploy-server /bin/sh << EOT
                     cd /app
                     docker load -i notaminfo.tar
                     docker compose up -d
