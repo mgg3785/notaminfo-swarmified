@@ -36,13 +36,13 @@ pipeline {
                     ssh $JSSH_OPTIONS root@deploy-server "mkdir -p /app && chmod 755 /app"
                     scp $JSSH_OPTIONS notaminfo.tar root@deploy-server:/app/
                     scp $JSSH_OPTIONS compose.yaml root@deploy-server:/app/
-                    ssh $JSSH_OPTIONS root@deploy-server
+                    ssh $JSSH_OPTIONS root@deploy-server /bin/bash << EOT
                     cd /app
                     docker load -i notaminfo.tar
                     docker compose up -d
                     sleep 10
                     docker compose logs > docker-deploy.logs
-                    exit
+EOT
                 '''
             }
         }
