@@ -37,6 +37,9 @@ pipeline {
                     scp $JSSH_OPTIONS notaminfo.tar root@deploy-server:/app/
                     scp $JSSH_OPTIONS compose.yaml root@deploy-server:/app/
                     ssh $JSSH_OPTIONS root@deploy-server /bin/bash << EOT
+                    export DOCKER_HOST=tcp://docker:2376
+                    export DOCKER_CERT_PATH=/certs/client
+                    export DOCKER_TLS_VERIFY=1
                     cd /app
                     docker load -i notaminfo.tar
                     docker compose up -d
