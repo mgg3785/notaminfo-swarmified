@@ -34,12 +34,12 @@ pipeline {
                     eval "$(ssh-agent -s)"
                     ssh-add $JSSH_KEY
                     ssh $JSSH_OPTIONS root@deploy-server "mkdir -p /app && chmod 755 /app"
-                    scp $JSSH_OPTIONS -r  ./ root@deploy-server:/app/
+                    scp $JSSH_OPTIONS notaminfo.tar compose.yaml .env.test root@deploy-server:/app/
                     ssh $JSSH_OPTIONS root@deploy-server /bin/bash << EOT
                     export DOCKER_HOST=$DOCKER_HOST
                     export DOCKER_CERT_PATH=$DOCKER_CERT_PATH
                     export DOCKER_TLS_VERIFY=$DOCKER_TLS_VERIFY
-                    export COMPOSE_ENV_FILES=./.env.test
+                    export COMPOSE_ENV_FILES=$COMPOSE_ENV_FILES
                     cd /app
                     docker load -i notaminfo.tar
                     docker compose up -d
