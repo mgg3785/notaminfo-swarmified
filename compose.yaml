@@ -48,6 +48,18 @@ services:
             CELERY_BROKER_URL: redis://redis:6379/1
         env_file:
             - .env.test
+        deploy:
+            mode: global
+            replicas: 3
+            restart_policy:
+                condition: on-failure
+                delay: 15s
+                max_attempts: 5
+            rollback_config:
+                parallelism: 1
+                order: start-first
+                failure_action: continue 
+
     celery:
         image: notaminfo
         container_name: celery-container
