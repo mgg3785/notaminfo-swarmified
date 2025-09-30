@@ -6,8 +6,10 @@ ENV PYTHONUNBUFFERED=1
 WORKDIR /app
 COPY . /app
 
+RUN apt-get update && apt-get install postgresql-client
 RUN pip install --no-cache-dir uv
 RUN uv sync
 RUN uv pip install psycopg[binary]
 
-CMD ["uv", "run", "manage.py", "runserver", "0.0.0.0:8000"]
+RUN chmod +x /app/django-entry.sh
+ENTRYPOINT ["/app/django-entry.sh"]
