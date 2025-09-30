@@ -20,9 +20,9 @@ pipeline {
                     export COMPOSE_ENV_FILES=./.env.test
                     docker compose -f "compose.test.yaml" up -d
                     docker ps
-                    docker compose logs > docker-test.logs
-                    docker compose exec -T django uv run pytest
-                    docker compose down --volumes
+                    docker compose -f "compose.test.yaml" logs > docker-test.logs
+                    docker compose -f "compose.test.yaml" exec -T django uv run pytest
+                    docker compose -f "compose.test.yaml" down --volumes
                     '''
             }
         }
