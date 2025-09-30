@@ -18,11 +18,11 @@ pipeline {
             steps {
                 sh '''
                     export COMPOSE_ENV_FILES=./.env.test
-                    docker compose -f "compose.yaml" up -d
+                    docker compose -f "compose.test.yaml" up -d
                     docker ps
                     docker compose logs > docker-test.logs
                     docker compose exec -T django uv run pytest
-                    docker compose down
+                    docker compose down --volumes
                     '''
             }
         }
@@ -33,18 +33,15 @@ pipeline {
                     docker save notaminfo -o notaminfo.tar
                     eval "$(ssh-agent -s)"
                     ssh-add $JSSH_KEY
-                    ssh $JSSH_OPTIONS root@deploy-server "mkdir -p /app && chmod 755 /app"
-                    scp $JSSH_OPTIONS notaminfo.tar compose.yaml .env.test root@deploy-server:/app/
-                    ssh $JSSH_OPTIONS root@deploy-server /bin/bash << EOT
-                    export DOCKER_HOST=$DOCKER_HOST
-                    export DOCKER_CERT_PATH=$DOCKER_CERT_PATH
-                    export DOCKER_TLS_VERIFY=$DOCKER_TLS_VERIFY
+                    ssh $JSSH_OPTIONS root@node0 "mkdir -p /app && chmod 755 /app"
+                    scp $JSSH_OPTIONS notaminfo.tar compose.deploy.yaml .env.test root@node0:/app/
+                    ssh $JSSH_OPTIONS root@node0 /bin/bash << EOT
                     export COMPOSE_ENV_FILES=$COMPOSE_ENV_FILES
                     cd /app
                     docker load -i notaminfo.tar
                     docker compose up -d
+                    docker stack deploy --compose-file compose.deploy.yaml notaminfostack
                     sleep 10
-                    docker compose logs > docker-deploy.logs
 EOT
                 '''
             }
