@@ -6,7 +6,7 @@ ENV PYTHONUNBUFFERED=1
 WORKDIR /app
 COPY . /app
 
-RUN apt-get update && apt-get install postgresql-client
+RUN apt-get update && apt-get install -y postgresql-client
 RUN pip install --no-cache-dir uv
 RUN uv sync
 RUN uv pip install psycopg[binary]
