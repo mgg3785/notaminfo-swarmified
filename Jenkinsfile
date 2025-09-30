@@ -35,7 +35,7 @@ pipeline {
                     ssh-add $JSSH_KEY
                     ssh $JSSH_OPTIONS root@node0 "mkdir -p /app && chmod 755 /app"
                     scp $JSSH_OPTIONS notaminfo.tar compose.deploy.yaml .env.test root@node0:/app/
-                    ssh $JSSH_OPTIONS root@node0 /bin/bash << EOT
+                    ssh $JSSH_OPTIONS root@node0 /bin/sh << EOT
                     export COMPOSE_ENV_FILES=$COMPOSE_ENV_FILES
                     cd /app
                     docker load -i notaminfo.tar
