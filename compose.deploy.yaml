@@ -1,5 +1,3 @@
-name: notaminfo
-
 services:
     db:
         image: postgres:17
