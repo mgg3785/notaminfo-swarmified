@@ -30,15 +30,15 @@ pipeline {
             steps {
                 sh '''
                     export COMPOSE_ENV_FILES=.env.test
-                    docker tag notaminfo:latest registry:5000/mahdi/notaminfo:latest
-                    docker push registry:5000/mahdi/notaminfo:latest
+                    docker save notaminfo -o notaminfo.tar
                     eval "$(ssh-agent -s)"
                     ssh-add $JSSH_KEY
                     ssh $JSSH_OPTIONS root@node0 "mkdir -p /app && chmod 755 /app"
-                    scp $JSSH_OPTIONS compose.deploy.yaml .env.test root@node0:/app/
+                    scp $JSSH_OPTIONS notaminfo.tar compose.deploy.yaml .env.test root@node0:/app/
                     ssh $JSSH_OPTIONS root@node0 /bin/sh << EOT
                     export COMPOSE_ENV_FILES=$COMPOSE_ENV_FILES
                     cd /app
+                    docker load -i notaminfo.tar
                     docker compose up -d
                     docker stack deploy --compose-file compose.deploy.yaml notaminfostack
                     sleep 10
