@@ -30,6 +30,7 @@ pipeline {
             steps {
                 sh '''
                     export COMPOSE_ENV_FILES=.env.test
+                    rm -rf /var/jenkins_home/registry-data/docker/registry/v2/repositories/*
                     docker tag notaminfo:latest registry:5000/mahdi/notaminfo:latest
                     docker push registry:5000/mahdi/notaminfo:latest
                     eval "$(ssh-agent -s)"
