@@ -30,11 +30,11 @@ pipeline {
             steps {
                 sh '''
                     export COMPOSE_ENV_FILES=.env.test
-                    rm -rf /var/jenkins_home/registry-data/docker/registry/v2/repositories/*
                     docker tag notaminfo:latest registry:5000/mahdi/notaminfo:latest
-                    docker push registry:5000/mahdi/notaminfo:latest
                     eval "$(ssh-agent -s)"
                     ssh-add $JSSH_KEY
+                    ssh $JSSH_OPTIONS root@node0 "rm -rf /registry-data/docker/registry/v2/repositories/*"
+                    docker push registry:5000/mahdi/notaminfo:latest
                     ssh $JSSH_OPTIONS root@node0 "mkdir -p /app && chmod 755 /app"
                     scp $JSSH_OPTIONS compose.deploy.yaml .env.test root@node0:/app/
                     ssh $JSSH_OPTIONS root@node0 /bin/sh << EOT
